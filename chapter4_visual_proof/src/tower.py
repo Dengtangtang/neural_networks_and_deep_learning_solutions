@@ -63,8 +63,12 @@ def step(w_x, X, Y, x_0, y_0, alpha):
             line on x-y plane intersects x-axis at angle alpha,
             which means the value of slope of the line is `tan(alpha)`.
 
-            The range of alpha is restricted to [0, 2*pi). For convinience,
-            any alpha larger than `pi` will be subtracted from `pi`.
+            The range of alpha is restricted to [0, 2*pi).
+
+            !!! For convinience of computation, any alpha larger than `pi` will be subtracted from `pi`.
+            Actually, the shape of step function is opposite for example, when the alpha is 0.25pi
+            and 1.25pi respectively!!! Since our aime is to compute the bump centered at the given
+            point.
 
         Return
         ------
@@ -170,27 +174,30 @@ def bump(w_x, X, Y, x_0, y_0, d, alpha):
     return Z_2 - Z_1
 
 
-def tower(w_x, X, Y, x_0, y_0, d, alphas, m):
+def tower(w_x, X, Y, x_0, y_0, d, alphas):
     ''' Merge two step functions, the parallel lines on x-y plane are centered at (x_0, y_0)
         with distance `d` to each line.
 
         The network behind the tower function is composed of input layer with two neurons and
         2m neurons(2 neurons for a bump) in a hidden layer, since I do not control the height
-        of the tower. If I need to control the height just return the value with `h * (Z / m)`
+        of the tower. If I need to control the height just return the value with `h * (Z / len(alphas))`
         and `h` will be the weights related to this tower on the output layer.
 
         Parameters
         ----------
-        m : int
+        alphas : list
             m bumps in m directions
         Other parameters are the same as `bump` function.
 
         Return
         ------
         out : numpy.ndarray
-            m bumps' combination and divided by m. Hence, the non-overlapping part will
-            be suppressed to 1/m. When m is large, 1/m -> zero. On the other hand, the
-            overlapping part (tower) will be m/m = 1.
+            this is weighted output from hidden layer.
+
+            The final output of network could be like:
+                m bumps' combination and divided by m. Hence, the non-overlapping part will
+                be suppressed to 1/m.When m is large, 1/m -> zero. On the other hand, the
+                overlapping part (tower) will be m/m = 1.
     '''
 
     if m <= 0 or not isinstance(m, int):
@@ -200,7 +207,7 @@ def tower(w_x, X, Y, x_0, y_0, d, alphas, m):
     for alpha in alphas:
         Z += bump(w_x, X, Y, x_0, y_0, d, alpha)
 
-    return Z / m
+    return Z
 
 
 def sigmoid(z):
@@ -231,25 +238,25 @@ if __name__ == '__main__':
     # plot(X, Y, Z)
 
     # --- tower ---
-    # m = 30
+    # m = 100
     # w_x = 100
-    # x_0 = 5
-    # y_0 = 5
+    # x_0 = 2
+    # y_0 = 3
     # d = 1
     # alphas = [i*2*np.pi/m for i in range(m)]
-    # Z = tower(w_x, X, Y, x_0, y_0, d, alphas, m)
+    # Z = tower(w_x, X, Y, x_0, y_0, d, alphas)
     # plot(X, Y, Z)
 
-    # --- two towers ---
-    # m = 30
+    # # --- two towers ---
+    # m = 100
     # w_x = 100
-    # x_1 = 5
-    # y_1 = 5
-    # x_2 = -5
-    # y_2 = -5
+    # x_1 = 2
+    # y_1 = 3
+    # x_2 = -2
+    # y_2 = -3
     # d = 1
     # alphas = [i*2*np.pi/m for i in range(m)]
-    # Z_1 = tower(w_x, X, Y, x_1, y_1, d, alphas, m)
-    # Z_2 = tower(w_x, X, Y, x_2, y_2, d, alphas, m)
+    # Z_1 = tower(w_x, X, Y, x_1, y_1, d, alphas)
+    # Z_2 = tower(w_x, X, Y, x_2, y_2, d, alphas)
     # Z = Z_1 + Z_2
     # plot(X, Y, Z)
